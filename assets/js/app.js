@@ -6,6 +6,45 @@
 // Log para confirmar carregamento do script
 console.log('app.js carregado');
 
+// Função para verificar integridade das dependências
+function verificarDependencias() {
+    const dependencias = [
+        { nome: 'formatCurrency', tipo: 'função', origem: 'utils.js' },
+        { nome: 'convertToNumber', tipo: 'função', origem: 'utils.js' },
+        { nome: 'toggleDetalhes', tipo: 'função', origem: 'utils.js' },
+        { nome: 'toggleTabela', tipo: 'função', origem: 'utils.js' },
+        { nome: 'validarFormulario', tipo: 'função', origem: 'utils.js' },
+        { nome: 'getBancosOrdenadosPorTaxa', tipo: 'função', origem: 'banks.js' },
+        { nome: 'getBancoPorNome', tipo: 'função', origem: 'banks.js' },
+        { nome: 'bancosCsv', tipo: 'variável', origem: 'banks.js' },
+        { nome: 'simularTodosBancos', tipo: 'função', origem: 'calculator.js' },
+        { nome: 'simularEmprestimoBanco', tipo: 'função', origem: 'calculator.js' },
+        { nome: 'gerarHTMLComparativoBancos', tipo: 'função', origem: 'ui.js' },
+        { nome: 'gerarHTMLBancoEspecifico', tipo: 'função', origem: 'ui.js' }
+    ];
+    
+    const dependenciasAusentes = dependencias.filter(dep => {
+        if (dep.tipo === 'função') {
+            return typeof window[dep.nome] !== 'function';
+        } else {
+            return typeof window[dep.nome] === 'undefined';
+        }
+    });
+    
+    if (dependenciasAusentes.length > 0) {
+        console.error('ERRO: As seguintes dependências não foram carregadas:');
+        dependenciasAusentes.forEach(dep => {
+            console.error(`- ${dep.nome} (${dep.origem})`);
+        });
+        
+        // Exibir mensagem de erro para o usuário
+        alert('Não foi possível inicializar a aplicação corretamente. Tente recarregar a página.');
+        return false;
+    }
+    
+    return true;
+}
+
 // Função principal de simulação
 function simularEmprestimo() {
     console.log('Função simularEmprestimo chamada');
@@ -64,7 +103,7 @@ function simularEmprestimo() {
                 }
 
                 console.log('Exibindo resultados');
-                // Mostrar resultados diretamente sem usar a função
+                // Mostrar resultados
                 const resultadosDiv = document.getElementById('results');
                 const resultadoContent = document.getElementById('result-content');
                 
@@ -164,62 +203,48 @@ function registrarEventListeners() {
     }
 }
 
+// Adiciona identificação de erros de carregamento
+window.addEventListener('error', function(event) {
+    console.error('Erro de carregamento detectado:', event.filename);
+    // Registra o erro mas não interrompe a execução
+});
+
 // Inicializar a aplicação quando a página carregar
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM carregado, iniciando aplicação');
     
     try {
+        // Verificar se todas as dependências foram carregadas
+        if (!verificarDependencias()) {
+            return;
+        }
+        
         // Inicializar dropdown de bancos
         inicializarDropdownBancos();
         
         // Registrar event listeners
         registrarEventListeners();
         
-        // Verificar se funções globais necessárias estão disponíveis
-        if (typeof toggleDetalhes !== 'function') {
-            console.error('Função toggleDetalhes não encontrada no escopo global. Verifique utils.js');
-            // Definir uma função alternativa para evitar erros
-            window.toggleDetalhes = function(id) {
-                console.warn('Função toggleDetalhes substituta chamada');
-                const elemento = document.getElementById(id);
-                if (elemento) {
-                    elemento.style.display = elemento.style.display === 'none' ? 'table-row' : 'none';
-                }
-            };
-        }
-        
-        if (typeof toggleTabela !== 'function') {
-            console.error('Função toggleTabela não encontrada no escopo global. Verifique utils.js');
-            // Definir uma função alternativa para evitar erros
-            window.toggleTabela = function(id) {
-                console.warn('Função toggleTabela substituta chamada');
-                const elemento = document.getElementById(id);
-                if (elemento) {
-                    elemento.style.display = elemento.style.display === 'none' ? 'block' : 'none';
-                }
-            };
-        }
+        // Garantir que funções globais estejam disponíveis
+        window.toggleDetalhes = window.toggleDetalhes || function(id) {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                elemento.style.display = elemento.style.display === 'none' ? 'table-row' : 'none';
+            }
+        };
+
+        window.toggleTabela = window.toggleTabela || function(id) {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                elemento.style.display = elemento.style.display === 'none' ? 'block' : 'none';
+            }
+        };
         
         // Mostrar versão no console (para desenvolvimento)
-        console.log('Simulador de Empréstimo Consignado v1.0.0');
+        console.log('Simulador de Empréstimo Consignado v1.0.1');
         console.log('Iniciado com sucesso!');
     } catch (error) {
         console.error('Erro ao inicializar a aplicação:', error);
         alert('Ocorreu um erro ao inicializar a aplicação. Por favor, recarregue a página.');
     }
 });
-
-// Garantir que as funções de toggle estão disponíveis globalmente
-window.toggleDetalhes = window.toggleDetalhes || function(id) {
-    const elemento = document.getElementById(id);
-    if (elemento) {
-        elemento.style.display = elemento.style.display === 'none' ? 'table-row' : 'none';
-    }
-};
-
-window.toggleTabela = window.toggleTabela || function(id) {
-    const elemento = document.getElementById(id);
-    if (elemento) {
-        elemento.style.display = elemento.style.display === 'none' ? 'block' : 'none';
-    }
-};
