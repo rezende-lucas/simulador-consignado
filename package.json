@@ -1,0 +1,20 @@
+{
+  "name": "simulador-consignado",
+  "version": "1.0.0",
+  "description": "Simulador de Empréstimo Consignado",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve",
+    "build": "echo 'No build step required'"
+  },
+  "keywords": [
+    "simulador",
+    "emprestimo",
+    "consignado"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}
