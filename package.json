@@ -2,10 +2,11 @@
   "name": "simulador-consignado",
   "version": "1.0.0",
   "description": "Simulador de Empréstimo Consignado",
-  "main": "index.html",
+  "private": true,
   "scripts": {
-    "start": "serve",
-    "build": "echo 'No build step required'"
+    "dev": "serve",
+    "build": "mkdir -p dist && cp -R index.html assets 404.html robots.txt dist/",
+    "start": "serve dist"
   },
   "keywords": [
     "simulador",
