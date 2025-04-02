@@ -3,6 +3,12 @@
  * Simulador de Empréstimo Consignado
  */
 
+console.log('Iniciando app.js');
+window.onerror = function(message, source, lineno, colno, error) {
+  console.error('Erro global capturado:', message, 'em', source, 'linha:', lineno);
+  return true;
+};
+
 // Log para confirmar carregamento do script
 console.log('app.js carregado');
 
