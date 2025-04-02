@@ -12,6 +12,12 @@
     <meta property="og:description" content="Compare taxas e simule seu empréstimo consignado com as taxas atualizadas do Banco Central do Brasil.">
     <meta property="og:url" content="https://simulador-consignado.vercel.app/">
     <meta property="og:type" content="website">
+    
+    <!-- Verificação de erros e cabeçalhos HTTP -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
     <meta name="google-site-verification" content="hIfAPnFfsFiY885vZbVNGSgjrb8IDAxeob3tI3ZOeaM" />
     <meta name="google-adsense-account" content="ca-pub-3129575091195381">    
@@ -19,8 +25,11 @@
     <title>Simulador de Empréstimo Consignado</title>
     
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/responsive.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/responsive.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
     
     <!-- Scripts do Vercel Analytics -->
     <script>
@@ -108,11 +117,22 @@
         </div>
     </footer>
     
-    <!-- Scripts - Note que alterei a ordem para garantir que as dependências sejam carregadas primeiro -->
-    <script src="assets/js/utils.js"></script>
-    <script src="assets/data/banks.js"></script>
-    <script src="assets/js/calculator.js"></script>
-    <script src="assets/js/ui.js"></script>
-    <script src="assets/js/app.js"></script>
+    <!-- Scripts - Caminhos com barras iniciais para garantir carregamento absoluto -->
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/data/banks.js"></script>
+    <script src="/assets/js/calculator.js"></script>
+    <script src="/assets/js/ui.js"></script>
+    <script src="/assets/js/app.js"></script>
+    
+    <!-- Script para verificar integridade de caminhos -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar se estamos em um ambiente de erro 404
+            if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+                console.warn('Rota não encontrada, redirecionando para home:', window.location.pathname);
+                window.location.href = '/';
+            }
+        });
+    </script>
 </body>
 </html>
