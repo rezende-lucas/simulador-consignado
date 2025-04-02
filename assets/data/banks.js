@@ -4,7 +4,7 @@
  */
 
 // Dados de taxa de juros dos bancos (originalmente do CSV)
-const bancosCsv = [
+window.bancosCsv = [
     {"Posicao":"1","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO ITAÚ CONSIGNADO S.A.","TaxaJurosAoMes":"1,26","TaxaJurosAoAno":"16,21"},
     {"Posicao":"2","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO ALFA S.A.","TaxaJurosAoMes":"1,53","TaxaJurosAoAno":"20,03"},
     {"Posicao":"3","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO INTER","TaxaJurosAoMes":"1,55","TaxaJurosAoAno":"20,25"},
@@ -50,13 +50,13 @@ const bancosCsv = [
 ];
 
 // Função para obter dados dos bancos ordenados por taxa
-function getBancosOrdenadosPorTaxa() {
-    return bancosCsv.sort((a, b) => {
+window.getBancosOrdenadosPorTaxa = function() {
+    return window.bancosCsv.sort((a, b) => {
         return convertToNumber(a.TaxaJurosAoMes) - convertToNumber(b.TaxaJurosAoMes);
     });
-}
+};
 
 // Função para obter um banco específico pelo nome
-function getBancoPorNome(nomeBanco) {
-    return bancosCsv.find(banco => banco.InstituicaoFinanceira === nomeBanco);
-}
+window.getBancoPorNome = function(nomeBanco) {
+    return window.bancosCsv.find(banco => banco.InstituicaoFinanceira === nomeBanco);
+};
