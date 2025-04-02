@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Empréstimo Consignado</title>
+    <style>
+        :root {
+            --primary-color: #006633;
+            --secondary-color: #ffcc00;
+            --background-color: #f5f5f5;
+            --text-color: #333;
+            --card-bg: #fff;
+            --success-color: #28a745;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        header h1 {
+            font-size: 2rem;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: #00552b;
+        }
+        
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .results h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .result-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .result-item {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .result-item strong {
+            font-weight: 600;
+        }
+        
+        .result-total {
+            font-size: 1.2rem;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            color: var(--success-color);
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .bank-logo {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+            vertical-align: middle;
+            border-radius: 50%;
+            background-color: #ddd;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .bank-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .installment-table th, .installment-table td {
+            text-align: center;
+        }
+        
+        .toggle-table {
+            color: var(--primary-color);
+            margin-top: 15px;
+            background: none;
+            border: none;
+            text-decoration: underline;
+            cursor: pointer;
+            width: auto;
+            padding: 5px;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .form-grid {
+                display: block;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .flag-br {
+            display: inline-block;
+            width: 21px;
+            height: 15px;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NzIgNjcyIj48cGF0aCBmaWxsPSIjMDA5OTVlIiBkPSJNMCAwaDk3MnY2NzJIMHoiLz48cGF0aCBkPSJNNDg2IDY3LjFsNDMwLjIgMjY4LjNMNDg2IDYwNC45IDU1LjggMzM1LjR6IiBmaWxsPSIjZmVkZjAwIi8+PGNpcmNsZSByPSIxNTcuMiIgZmlsbD0iIzAwMjc3NiIgY3g9IjQ4NiIgY3k9IjMzNi41Ii8+PHBhdGggZD0iTTMzMS45IDI5MC45Yy02OC43IDU5LjIgNDYuNyAxNzggMTU0LjIgMTE4LjggMy42LTYuNi0xMC40LTQ0LjQtMTAuNC00NC40bC05My43LTQ0LjEtODkuNCA0My40IDM5LjMtNzMuMnoiIGZpbGw9IiNmZmYiLz48L3N2Zz4=') center center no-repeat;
+            background-size: cover;
+            margin-right: 5px;
+        }
+        
+        .info-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #999;
+            color: white;
+            text-align: center;
+            line-height: 16px;
+            font-size: 12px;
+            margin-left: 5px;
+            cursor: help;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            margin-top: 50px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><span class="flag-br"></span> Simulador de Empréstimo Consignado</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <p class="subtitle">Compare as melhores taxas do mercado e simule seu empréstimo consignado</p>
+        
+        <div class="card">
+            <div class="form-grid">
+                <div>
+                    <div class="form-group">
+                        <label for="valor">Valor do Empréstimo (R$)</label>
+                        <input type="number" id="valor" placeholder="Ex: 5000" min="500" step="100" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="parcelas">Número de Parcelas</label>
+                        <select id="parcelas" required>
+                            <option value="">Selecione</option>
+                            <option value="12">12 meses (1 ano)</option>
+                            <option value="24">24 meses (2 anos)</option>
+                            <option value="36">36 meses (3 anos)</option>
+                            <option value="48">48 meses (4 anos)</option>
+                            <option value="60">60 meses (5 anos)</option>
+                            <option value="72">72 meses (6 anos)</option>
+                            <option value="84">84 meses (7 anos)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label for="banco">Selecione a Instituição Financeira 
+                            <span class="tooltip">
+                                <span class="info-icon">i</span>
+                                <span class="tooltiptext">Você pode selecionar um banco específico ou comparar todas as taxas</span>
+                            </span>
+                        </label>
+                        <select id="banco">
+                            <option value="todos">Comparar todas as instituições</option>
+                            <!-- Opções serão preenchidas via JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tipo-simulacao">Tipo de Simulação</label>
+                        <select id="tipo-simulacao">
+                            <option value="price">Tabela PRICE (Parcelas fixas)</option>
+                            <option value="sac">Tabela SAC (Amortização constante)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="simular">Simular Empréstimo</button>
+        </div>
+        
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Calculando as melhores opções para você...</p>
+        </div>
+        
+        <div id="results" class="results">
+            <h3>Resultado da Simulação</h3>
+            
+            <div id="result-content">
+                <!-- Aqui será inserido o resultado da simulação -->
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 Simulador de Empréstimo Consignado - Taxas baseadas em dados do Banco Central do Brasil</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Dados do arquivo CSV
+        const bancosCsv = [
+            {"Posicao":"1","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO ITAÚ CONSIGNADO S.A.","TaxaJurosAoMes":"1,26","TaxaJurosAoAno":"16,21"},
+            {"Posicao":"2","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO ALFA S.A.","TaxaJurosAoMes":"1,53","TaxaJurosAoAno":"20,03"},
+            {"Posicao":"3","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO INTER","TaxaJurosAoMes":"1,55","TaxaJurosAoAno":"20,25"},
+            {"Posicao":"4","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO COOPERATIVO SICREDI S.A.","TaxaJurosAoMes":"1,63","TaxaJurosAoAno":"21,34"},
+            {"Posicao":"5","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BRB - BCO DE BRASILIA S.A.","TaxaJurosAoMes":"1,65","TaxaJurosAoAno":"21,67"},
+            {"Posicao":"6","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO MASTER","TaxaJurosAoMes":"1,67","TaxaJurosAoAno":"21,92"},
+            {"Posicao":"7","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO C6 S.A.","TaxaJurosAoMes":"1,68","TaxaJurosAoAno":"22,13"},
+            {"Posicao":"8","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO DAYCOVAL S.A","TaxaJurosAoMes":"1,68","TaxaJurosAoAno":"22,13"},
+            {"Posicao":"9","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO SANTANDER (BRASIL) S.A.","TaxaJurosAoMes":"1,69","TaxaJurosAoAno":"22,31"},
+            {"Posicao":"10","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO BRADESCO S.A.","TaxaJurosAoMes":"1,69","TaxaJurosAoAno":"22,34"},
+            {"Posicao":"11","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO DO ESTADO DO RS S.A.","TaxaJurosAoMes":"1,72","TaxaJurosAoAno":"22,7"},
+            {"Posicao":"12","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO DO BRASIL S.A.","TaxaJurosAoMes":"1,81","TaxaJurosAoAno":"24,01"},
+            {"Posicao":"13","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"ITAÚ UNIBANCO S.A.","TaxaJurosAoMes":"1,85","TaxaJurosAoAno":"24,63"},
+            {"Posicao":"14","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"CAIXA ECONOMICA FEDERAL","TaxaJurosAoMes":"1,99","TaxaJurosAoAno":"26,75"},
+            {"Posicao":"15","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"AGIBANK S.A.","TaxaJurosAoMes":"2,02","TaxaJurosAoAno":"27,1"},
+            {"Posicao":"16","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO SAFRA S.A.","TaxaJurosAoMes":"2,04","TaxaJurosAoAno":"27,38"},
+            {"Posicao":"17","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO BMG S.A.","TaxaJurosAoMes":"2,07","TaxaJurosAoAno":"27,81"},
+            {"Posicao":"18","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BV FINANCEIRA S.A. CFI","TaxaJurosAoMes":"2,08","TaxaJurosAoAno":"28,01"},
+            {"Posicao":"19","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO MERCANTIL DO BRASIL S.A.","TaxaJurosAoMes":"2,1","TaxaJurosAoAno":"28,33"},
+            {"Posicao":"20","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"PORTOSEG S.A. CFI","TaxaJurosAoMes":"2,12","TaxaJurosAoAno":"28,62"},
+            {"Posicao":"21","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO AFINZ S.A. - BCO MULTIPLO","TaxaJurosAoMes":"2,14","TaxaJurosAoAno":"28,9"},
+            {"Posicao":"22","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO CETELEM S.A.","TaxaJurosAoMes":"2,14","TaxaJurosAoAno":"29,02"},
+            {"Posicao":"23","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO PAN","TaxaJurosAoMes":"2,14","TaxaJurosAoAno":"29,03"},
+            {"Posicao":"24","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO CETELEM S.A.","TaxaJurosAoMes":"2,15","TaxaJurosAoAno":"29,07"},
+            {"Posicao":"25","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO OLÉ BONSUCESSO CONSIGNADO S.A.","TaxaJurosAoMes":"2,15","TaxaJurosAoAno":"29,08"},
+            {"Posicao":"26","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO ABC BRASIL S.A.","TaxaJurosAoMes":"2,2","TaxaJurosAoAno":"29,84"},
+            {"Posicao":"27","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO DIGIO","TaxaJurosAoMes":"2,24","TaxaJurosAoAno":"30,47"},
+            {"Posicao":"28","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BANCO FIBRA S.A.","TaxaJurosAoMes":"2,25","TaxaJurosAoAno":"30,6"},
+            {"Posicao":"29","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO BANESTES S.A.","TaxaJurosAoMes":"2,29","TaxaJurosAoAno":"31,2"},
+            {"Posicao":"30","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"FACTA S.A. CFI","TaxaJurosAoMes":"2,3","TaxaJurosAoAno":"31,37"},
+            {"Posicao":"31","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO DO ESTADO DE SE S.A.","TaxaJurosAoMes":"2,3","TaxaJurosAoAno":"31,44"},
+            {"Posicao":"32","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"FINANC ALFA S.A. CFI","TaxaJurosAoMes":"2,43","TaxaJurosAoAno":"33,32"},
+            {"Posicao":"33","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO INDUSTRIAL DO BRASIL S.A.","TaxaJurosAoMes":"2,46","TaxaJurosAoAno":"33,86"},
+            {"Posicao":"34","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO SEMEAR S.A.","TaxaJurosAoMes":"2,78","TaxaJurosAoAno":"38,84"},
+            {"Posicao":"35","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"CCB BRASIL S.A. - CFI","TaxaJurosAoMes":"2,84","TaxaJurosAoAno":"39,89"},
+            {"Posicao":"36","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO CCB BRASIL S.A.","TaxaJurosAoMes":"2,91","TaxaJurosAoAno":"40,93"},
+            {"Posicao":"37","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"SANTINVEST S.A. - CFI","TaxaJurosAoMes":"2,98","TaxaJurosAoAno":"42,09"},
+            {"Posicao":"38","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"GAZINCRED S.A. SCFI","TaxaJurosAoMes":"2,99","TaxaJurosAoAno":"42,41"},
+            {"Posicao":"39","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO BS2 S.A.","TaxaJurosAoMes":"3,09","TaxaJurosAoAno":"44,18"},
+            {"Posicao":"40","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"SOROCRED CFI S.A.","TaxaJurosAoMes":"3,46","TaxaJurosAoAno":"50,5"},
+            {"Posicao":"41","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"BCO BARI S.A.","TaxaJurosAoMes":"3,69","TaxaJurosAoAno":"54,39"},
+            {"Posicao":"42","Segmento":"Pessoa Física","Modalidade":"Crédito pessoal consignado público - Pré-fixado","InstituicaoFinanceira":"COOP CENTRAL AILOS","TaxaJurosAoMes":"4,1","TaxaJurosAoAno":"61,8"}
+        ];
+
+        // Função para formatar valores monetários
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+        
+        // Função para converter string com vírgula para número
+        function convertToNumber(value) {
+            if (typeof value === 'string') {
+                return parseFloat(value.replace(',', '.'));
+            }
+            return value;
+        }
+        
+        // Função para calcular prestação pelo sistema Price (parcelas fixas)
+        function calcularPrestacaoPrice(valor, taxa, parcelas) {
+            const taxaDecimal = taxa / 100;
+            return valor * (taxaDecimal * Math.pow(1 + taxaDecimal, parcelas)) / (Math.pow(1 + taxaDecimal, parcelas) - 1);
+        }
+
+        // Função para calcular tabela de amortização pelo sistema Price
+        function calcularTabelaPrice(valor, taxa, parcelas) {
+            const taxaDecimal = taxa / 100;
+            const prestacao = calcularPrestacaoPrice(valor, taxa, parcelas);
+            const tabela = [];
+            let saldoDevedor = valor;
+
+            for (let i = 1; i <= parcelas; i++) {
+                const juros = saldoDevedor * taxaDecimal;
+                const amortizacao = prestacao - juros;
+                saldoDevedor -= amortizacao;
+
+                tabela.push({
+                    parcela: i,
+                    prestacao: prestacao,
+                    juros: juros,
+                    amortizacao: amortizacao,
+                    saldoDevedor: Math.max(0, saldoDevedor)
+                });
+            }
+
+            return tabela;
+        }
+
+        // Função para calcular tabela de amortização pelo sistema SAC
+        function calcularTabelaSAC(valor, taxa, parcelas) {
+            const taxaDecimal = taxa / 100;
+            const amortizacaoConstante = valor / parcelas;
+            const tabela = [];
+            let saldoDevedor = valor;
+
+            for (let i = 1; i <= parcelas; i++) {
+                const juros = saldoDevedor * taxaDecimal;
+                const prestacao = amortizacaoConstante + juros;
+                saldoDevedor -= amortizacaoConstante;
+
+                tabela.push({
+                    parcela: i,
+                    prestacao: prestacao,
+                    juros: juros,
+                    amortizacao: amortizacaoConstante,
+                    saldoDevedor: Math.max(0, saldoDevedor)
+                });
+            }
+            
+            return tabela;
+        }
+        
+        // Função para alternar visibilidade
+        function toggleDetalhes(id) {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                elemento.style.display = elemento.style.display === 'none' ? 'table-row' : 'none';
+            }
+        }
+        
+        function toggleTabela(id) {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                elemento.style.display = elemento.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+        
+        // Função principal de simulação
+        function simularEmprestimo() {
+            const valor = parseFloat(document.getElementById('valor').value);
+            const parcelas = parseInt(document.getElementById('parcelas').value);
+            const bancoSelecionado = document.getElementById('banco').value;
+            const tipoSimulacao = document.getElementById('tipo-simulacao').value;
+            const resultadosDiv = document.getElementById('results');
+            const resultadoContent = document.getElementById('result-content');
+            const loadingDiv = document.querySelector('.loading');
+
+            // Validação básica
+            if (isNaN(valor) || valor <= 0 || isNaN(parcelas) || parcelas <= 0) {
+                alert('Por favor, preencha corretamente todos os campos.');
+                return;
+            }
+
+            // Mostrar loading
+            loadingDiv.style.display = 'block';
+            resultadosDiv.style.display = 'none';
+            
+            // Simular processamento (para melhor UX)
+            setTimeout(() => {
+                // Esconder loading
+                loadingDiv.style.display = 'none';
+                
+                let html = '';
+                if (bancoSelecionado === 'todos') {
+                    // Simular para todos os bancos e ordenar pelo custo total
+                    const resultados = bancosCsv.map(banco => {
+                        const taxaMensal = convertToNumber(banco.TaxaJurosAoMes);
+                        let tabela;
+                        let valorParcela;
+                        let totalPago;
+                        let totalJuros;
+
+                        if (tipoSimulacao === 'price') {
+                            tabela = calcularTabelaPrice(valor, taxaMensal, parcelas);
+                            valorParcela = tabela[0].prestacao;
+                        } else {
+                            tabela = calcularTabelaSAC(valor, taxaMensal, parcelas);
+                            valorParcela = tabela[0].prestacao; // Primeira parcela (maior)
+                        }
+
+                        totalPago = tabela.reduce((sum, row) => sum + row.prestacao, 0);
+                        totalJuros = totalPago - valor;
+
+                        return {
+                            banco: banco,
+                            valorParcela: valorParcela,
+                            totalPago: totalPago,
+                            totalJuros: totalJuros,
+                            taxaMensal: taxaMensal,
+                            taxaAnual: convertToNumber(banco.TaxaJurosAoAno),
+                            tabela: tabela
+                        };
+                    }).sort((a, b) => a.totalPago - b.totalPago);
+
+                    // Mostrar tabela comparativa
+                    html += `
+                        <div class="result-card">
+                            <h4>Melhores Ofertas de Empréstimo Consignado</h4>
+                            <p>Valor solicitado: ${formatCurrency(valor)} em ${parcelas} parcelas pelo sistema ${tipoSimulacao === 'price' ? 'PRICE (parcelas fixas)' : 'SAC (amortização constante)'}</p>
+                            
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Posição</th>
+                                            <th>Instituição</th>
+                                            <th>Taxa a.m.</th>
+                                            <th>Taxa a.a.</th>
+                                            <th>${tipoSimulacao === 'price' ? 'Parcela' : '1ª Parcela'}</th>
+                                            <th>Total</th>
+                                            <th>Juros pagos</th>
+                                            <th>Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                    `;
+
+                    resultados.slice(0, 10).forEach((resultado, index) => {
+                        html += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>
+                                    <div class="bank-info">
+                                        <span class="bank-logo" style="background-color: hsl(${index * 36}, 70%, 50%)">
+                                            ${resultado.banco.InstituicaoFinanceira.charAt(0)}
+                                        </span>
+                                        ${resultado.banco.InstituicaoFinanceira}
+                                    </div>
+                                </td>
+                                <td>${resultado.taxaMensal.toFixed(2).replace('.', ',')}%</td>
+                                <td>${resultado.taxaAnual.toFixed(2).replace('.', ',')}%</td>
+                                <td>${formatCurrency(resultado.valorParcela)}</td>
+                                <td>${formatCurrency(resultado.totalPago)}</td>
+                                <td>${formatCurrency(resultado.totalJuros)}</td>
+                                <td>
+                                    <button class="toggle-table" onclick="toggleDetalhes('detalhes-${index}')">
+                                        Detalhes
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr id="detalhes-${index}" style="display: none;">
+                                <td colspan="8">
+                                    <div style="padding: 15px; background-color: #f9f9f9;">
+                                        <h5>Simulação detalhada - ${resultado.banco.InstituicaoFinanceira}</h5>
+                                        <p>Valor do empréstimo: ${formatCurrency(valor)}</p>
+                                        <p>Taxa de juros: ${resultado.taxaMensal.toFixed(2).replace('.', ',')}% ao mês (${resultado.taxaAnual.toFixed(2).replace('.', ',')}% ao ano)</p>
+                                        <p>Sistema de amortização: ${tipoSimulacao === 'price' ? 'PRICE (parcelas fixas)' : 'SAC (amortização constante)'}</p>
+                                        
+                                        <button class="toggle-table" onclick="toggleTabela('tabela-${index}')">
+                                            Ver tabela de amortização
+                                        </button>
+                                        
+                                        <div id="tabela-${index}" style="display: none; margin-top: 15px; max-height: 300px; overflow-y: auto;">
+                                            <table class="installment-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Parcela</th>
+                                                        <th>Prestação</th>
+                                                        <th>Juros</th>
+                                                        <th>Amortização</th>
+                                                        <th>Saldo devedor</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                        `;
+
+                        resultado.tabela.forEach(row => {
+                            html += `
+                                <tr>
+                                    <td>${row.parcela}</td>
+                                    <td>${formatCurrency(row.prestacao)}</td>
+                                    <td>${formatCurrency(row.juros)}</td>
+                                    <td>${formatCurrency(row.amortizacao)}</td>
+                                    <td>${formatCurrency(row.saldoDevedor)}</td>
+                                </tr>
+                            `;
+                        });
+
+                        html += `
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+
+                } else {
+                    // Simular para um banco específico
+                    const bancoEscolhido = bancosCsv.find(b => b.InstituicaoFinanceira === bancoSelecionado);
+                    const taxaMensal = convertToNumber(bancoEscolhido.TaxaJurosAoMes);
+                    let tabela;
+                    let valorParcela;
+                    let totalPago;
+                    let totalJuros;
+
+                    if (tipoSimulacao === 'price') {
+                        tabela = calcularTabelaPrice(valor, taxaMensal, parcelas);
+                        valorParcela = tabela[0].prestacao;
+                    } else {
+                        tabela = calcularTabelaSAC(valor, taxaMensal, parcelas);
+                        valorParcela = tabela[0].prestacao;
+                    }
+
+                    totalPago = tabela.reduce((sum, row) => sum + row.prestacao, 0);
+                    totalJuros = totalPago - valor;
+
+                    html += `
+                        <div class="result-card">
+                            <h4>Simulação de Empréstimo Consignado - ${bancoEscolhido.InstituicaoFinanceira}</h4>
+                            
+                            <div class="result-item">
+                                <span>Valor solicitado:</span> 
+                                <strong>${formatCurrency(valor)}</strong>
+                            </div>
+                            
+                            <div class="result-item">
+                                <span>Taxa de juros:</span>
+                                <strong>${taxaMensal.toFixed(2).replace('.', ',')}% ao mês (${convertToNumber(bancoEscolhido.TaxaJurosAoAno).toFixed(2).replace('.', ',')}% ao ano)</strong>
+                            </div>
+                            
+                            <div class="result-item">
+                                <span>Sistema de amortização:</span>
+                                <strong>${tipoSimulacao === 'price' ? 'PRICE (parcelas fixas)' : 'SAC (amortização constante)'}</strong>
+                            </div>
+                            
+                            <div class="result-item">
+                                <span>Número de parcelas:</span>
+                                <strong>${parcelas}</strong>
+                            </div>
+                            
+                            <div class="result-item">
+                                <span>${tipoSimulacao === 'price' ? 'Valor da parcela:' : 'Valor da 1ª parcela:'}</span>
+                                <strong>${formatCurrency(valorParcela)}</strong>
+                            </div>
+                            
+                            <div class="result-item result-total">
+                                <span>Total a pagar:</span>
+                                <strong>${formatCurrency(totalPago)}</strong>
+                            </div>
+                            
+                            <div class="result-item">
+                                <span>Total de juros:</span>
+                                <strong>${formatCurrency(totalJuros)}</strong>
+                            </div>
+                            
+                            <button class="toggle-table" onclick="toggleTabela('tabela-detalhada')">
+                                Ver tabela de amortização completa
+                            </button>
+                            
+                            <div id="tabela-detalhada" style="display: none; margin-top: 20px; max-height: 400px; overflow-y: auto;">
+                                <table class="installment-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Parcela</th>
+                                            <th>Prestação</th>
+                                            <th>Juros</th>
+                                            <th>Amortização</th>
+                                            <th>Saldo devedor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                    `;
+
+                    tabela.forEach(row => {
+                        html += `
+                            <tr>
+                                <td>${row.parcela}</td>
+                                <td>${formatCurrency(row.prestacao)}</td>
+                                <td>${formatCurrency(row.juros)}</td>
+                                <td>${formatCurrency(row.amortizacao)}</td>
+                                <td>${formatCurrency(row.saldoDevedor)}</td>
+                            </tr>
+                        `;
+                    });
+
+                    html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                resultadoContent.innerHTML = html;
+                resultadosDiv.style.display = 'block';
+                
+                // Scroll para os resultados
+                resultadosDiv.scrollIntoView({ behavior: 'smooth' });
+            }, 1000);
+        }
+
+        // Ordenar bancos por taxa
+        const bancos = bancosCsv.sort((a, b) => {
+            return convertToNumber(a.TaxaJurosAoMes) - convertToNumber(b.TaxaJurosAoMes);
+        });
+
+        // Preencher dropdown de bancos quando a página carregar
+        window.onload = function() {
+            const bancosSelect = document.getElementById('banco');
+            bancos.forEach(banco => {
+                const option = document.createElement('option');
+                option.value = banco.InstituicaoFinanceira;
+                option.textContent = `${banco.InstituicaoFinanceira} (${banco.TaxaJurosAoMes}% a.m.)`;
+                bancosSelect.appendChild(option);
+            });
+
+            // Adicionar event listener ao botão de simulação
+            document.getElementById('simular').addEventListener('click', simularEmprestimo);
+        }
+    </script>
+</body>
+</html>
